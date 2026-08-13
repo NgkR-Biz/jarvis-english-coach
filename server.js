@@ -52,6 +52,8 @@ Rules:
       body: JSON.stringify({ contents })
     });
 
+    const SILENCE_TIMEOUT_MS = 900; // ここの数値(ミリ秒)を大きくすると、より長く待ってくれます
+
     const data = await response.json();
 
     if (!response.ok) {
