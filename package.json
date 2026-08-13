@@ -1,0 +1,14 @@
+{
+  "name": "jarvis-english-coach",
+  "version": "1.0.0",
+  "description": "音声で英会話練習ができるJARVIS風AIコーチ (Gemini API / 無料枠)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
