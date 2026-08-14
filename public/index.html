@@ -174,21 +174,23 @@
     0%,100%{ box-shadow:0 0 20px rgba(79,216,240,0.4); }
     50%{ box-shadow:0 0 40px rgba(79,216,240,0.8); }
   }
-
-  #micBtn{
-    width:110px;
-    height:110px;
-    border-radius:50%;
-    background: radial-gradient(circle at 35% 30%, #12222b, #060a10 75%);
-    border: 1px solid var(--cyan-dim);
-    color: var(--cyan);
-    font-size: 34px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition: all .2s ease;
-  }
+// スマホ(特にiPhone)の自動再生制限を回避するため、
+// ユーザーの操作(クリック)の直後に一度だけ無音の音声を鳴らして「許可」を得ておく
+let speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked) return;
+  const unlock = new SpeechSynthesisUtterance('');
+  unlock.volume = 0;
+  speechSynthesis.speak(unlock);
+  speechUnlocked = true;
+}
+  
+micBtn.addEventListener('click', () => {
+  if (isBusy || !recognition) return;
+  unlockSpeech();
+  speechSynthesis.cancel();
+  recognition.start();
+});
   #micBtn:hover{ border-color: var(--cyan); }
   .core-wrap.listening #micBtn{ animation: pulse 1.4s ease-in-out infinite; border-color: var(--cyan); }
   .core-wrap.speaking #micBtn{ border-color: var(--amber); color: var(--amber); }
