@@ -411,6 +411,25 @@ micBtn.addEventListener('click', () => {
   recognition.start();
 });
 
+// スマホ(特にiPhone)の自動再生制限を回避するため、
+// ユーザーの操作(クリック)の直後に一度だけ無音の音声を鳴らして「許可」を得ておく
+let speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked) return;
+  const unlock = new SpeechSynthesisUtterance(' ');
+  unlock.volume = 0.01;
+  unlock.onerror = (e) => console.log('unlock error:', e.error);
+  speechSynthesis.speak(unlock);
+  speechUnlocked = true;
+}
+ 
+micBtn.addEventListener('click', () => {
+  if (isBusy || !recognition) return;
+  unlockSpeech();
+  speechSynthesis.cancel();
+  recognition.start();
+});
+  
 // --- トピックで会話を開始 ---
 async function startTopicConversation(topic) {
   isBusy = true;
@@ -555,16 +574,24 @@ function speak(text) {
     statusText.textContent = 'タップして話しかけてください';
     isBusy = false;
   };
+  utter.onerror = (e) => {
+    console.log('speech synth error:', e.error);
+    coreWrap.classList.remove('speaking');
+    statusText.textContent = '音声エラー: ' + e.error;
+    isBusy = false;
+  };
+  speechSynthesis.cancel();
   speechSynthesis.speak(utter);
 }
-
+ 
 // --- PWA: Service Workerを登録 ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
-
+ 
 </script>
 </body>
 </html>
+ 
