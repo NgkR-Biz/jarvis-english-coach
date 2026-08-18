@@ -578,22 +578,42 @@ function escapeHtml(str) {
 
 // --- 音声出力 (SpeechSynthesis API) ---
 function speak(text) {
+  isBusy = true;
   coreWrap.classList.add('speaking');
   statusText.textContent = 'SPEAKING...';
+
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'en-US';
   utter.rate = 0.98;
+
+  let started = false;
+  // 一定時間たっても再生が始まらない場合、自動再生がブロックされたとみなしUIを元に戻す
+  const fallbackTimer = setTimeout(() => {
+    if (!started) {
+      coreWrap.classList.remove('speaking');
+      statusText.textContent = '🔊ボタンで再生できます';
+      isBusy = false;
+    }
+  }, 2500);
+
+  utter.onstart = () => {
+    started = true;
+    clearTimeout(fallbackTimer);
+  };
   utter.onend = () => {
+    clearTimeout(fallbackTimer);
     coreWrap.classList.remove('speaking');
     statusText.textContent = 'タップして話しかけてください';
     isBusy = false;
   };
   utter.onerror = (e) => {
+    clearTimeout(fallbackTimer);
     console.log('speech synth error:', e.error);
     coreWrap.classList.remove('speaking');
     statusText.textContent = '音声エラー: ' + e.error;
     isBusy = false;
   };
+
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
 }
